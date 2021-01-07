@@ -1,6 +1,6 @@
 <head><base target="_blank"></head>
 
-## Stuff I Do:
+## Stuff I Do
 
 Software projects and freelancing on [Github](https://github.com/RoboMWM)
 
@@ -10,7 +10,7 @@ Hosting game servers (currently Minecraft and Team Fortress 2) on [Tech Fortress
 
 I also have a [Patreon](https://r.robomwm.com/patreon) if you wanna support me.
 
-## Contact:
+## Contact
 
 IRC: #RoboMWM @ irc.spi.gt ([launch IRC webclient](https://robomwm.com/chat))
 
