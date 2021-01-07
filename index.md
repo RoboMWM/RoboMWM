@@ -20,7 +20,7 @@ Currently under construction
 
 ### GriefPrevention
 - Minecraft server Bukkit plugin, written in Java, uses Bukkit API
-- https://github.com/TechFortress/GriefPrevention
+- [https://github.com/TechFortress/GriefPrevention](https://github.com/TechFortress/GriefPrevention)
 - Players define regions (named claims) in a 3D world and set permissions on who can modify what within their region. This prevents "grief" from occurring within their claim.
 - Also includes chat spam filtering.
 - One of the largest and most popular projects I maintain.
