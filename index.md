@@ -1,3 +1,5 @@
+<head><base target="_blank"></head>
+
 ## Stuff I Do:
 
 Software projects and freelancing on [Github](https://github.com/RoboMWM)
