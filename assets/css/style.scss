@@ -9,3 +9,11 @@ body {
   color: $text-white;
   background-color: $bg-gray-dark;
 }
+a {
+  color: $text-orange-light;
+  text-decoration: none;
+
+  &:hover {
+    text-decoration: underline;
+  }
+}
