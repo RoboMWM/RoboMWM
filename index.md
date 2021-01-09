@@ -8,11 +8,11 @@ Published Bukkit plugins: [SpigotMC](https://www.spigotmc.org/resources/authors/
 
 Hosting game servers (currently Minecraft and Team Fortress 2) on [Tech Fortress](http://techfortress.robomwm.com), a gaming community.
 
-I also have a [Patreon](https://r.robomwm.com/patreon) if you wanna support me.
-
 ## Contact
 
 IRC: #RoboMWM @ irc.spi.gt ([launch IRC webclient](https://robomwm.com/chat))
+
+I also have a [Patreon](https://r.robomwm.com/patreon) if you'd like to support me.
 
 ## Notable Projects
 
