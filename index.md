@@ -6,13 +6,15 @@ Software projects and freelancing on [Github](https://github.com/RoboMWM)
 
 Published Bukkit plugins: [SpigotMC](https://www.spigotmc.org/resources/authors/robomwm.19518/) and [BukkitDev](https://dev.bukkit.org/members/The_PC_Tech_Guy/projects)
 
-Hosting game servers (currently Minecraft and Team Fortress 2) on [Tech Fortress](http://techfortress.robomwm.com), a gaming community.
+Previously hosted public game servers such as Minecraft and Team Fortress 2 at [Tech Fortress](http://techfortress.robomwm.com). I currently host mostly private and community-organized servers nowadays.
 
 ## Contact
 
 IRC: #RoboMWM @ irc.spi.gt ([launch IRC webclient](https://robomwm.com/chat))
 
-I also have a [Patreon](https://r.robomwm.com/patreon) if you'd like to support me.
+I also read all direct messages from patrons on [Patreon](https://r.robomwm.com/patreon), which get emailed to me.
+
+Discord: [Discord server](https://r.robomwm.com/dumcord)
 
 ## Notable Projects
 
