@@ -1,32 +1,33 @@
 <head><base target="_blank"></head>
 
-## Stuff I Do
+## Stuff I do in my free time
 
-- Software projects and freelancing on [Github](https://github.com/RoboMWM)
-- Published Bukkit plugins: [SpigotMC](https://www.spigotmc.org/resources/authors/robomwm.19518/) and [BukkitDev](https://dev.bukkit.org/members/The_PC_Tech_Guy/projects)
-- Previously hosted public game servers such as Minecraft and Team Fortress 2 at [Tech Fortress](http://techfortress.robomwm.com). I currently host mostly private and community-organized servers nowadays.
+- Open source software projects and freelancing on [Github](https://github.com/RoboMWM)
+    - [GriefPrevention](https://github.com/TechFortress/GriefPrevention) is one of the largest projects I maintain
+- Publish Bukkit plugins on [SpigotMC](https://www.spigotmc.org/resources/authors/robomwm.19518/) and [BukkitDev](https://dev.bukkit.org/members/The_PC_Tech_Guy/projects)
+- Teach others software development
+- Previously hosted public game servers such as Minecraft and Team Fortress 2 at [Tech Fortress](http://techfortress.robomwm.com)
+- Currently hosting private and community-oriented servers
 
 ## Contact
 
-Please note that I will not provide support for any projects in private messages. Very few exceptions apply, such as serious security vulnerabilities or messages on [Patreon](https://r.robomwm.com/patreon).
-
 - IRC/Chat: currently down
 - I read all direct messages from patrons on [Patreon](https://r.robomwm.com/patreon), which get emailed to me.
-- Discord: [Discord server](https://r.robomwm.com/dumcord)
+- If you wish to use discord, there's a `#robomwm` channel in the [GriefPrevention Discord server](https://r.griefprevention.com/dumcord)
 
 ## Notable Projects
 
 Currently under construction
 
-### GriefPrevention
-- Minecraft server Bukkit plugin, written in Java, uses Bukkit API
+### [GriefPrevention](https://github.com/TechFortress/GriefPrevention)
+- Minecraft server Bukkit plugin, written in Java, uses Bukkit API.
 - [https://github.com/TechFortress/GriefPrevention](https://github.com/TechFortress/GriefPrevention)
 - Players define regions (named claims) in a 3D world and set permissions on who can modify what within their region. This prevents "grief" from occurring within their claim.
 - Also includes chat spam filtering.
-- One of the largest and most popular projects I maintain.
-- Currently working on a rewrite, cleaning and organizing codebase. Adding APIs for addons to augment its featureset.
+- One of the largest and most popular of my projects I maintain.
+- Roadmap for planning future API additions and code refactoring.
 
-### Tech Fortress
+### [Tech Fortress](http://techfortress.robomwm.com)
 - Hosting public game servers
   - Use of git and backup software, amongst the other joys of server maintenance
 - Fair amount of scripting
