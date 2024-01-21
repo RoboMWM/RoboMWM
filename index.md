@@ -1,6 +1,6 @@
 <head><base target="_blank"></head>
 
-## Stuff I do in my free time
+## Some stuff I do in my free time
 
 - Open source software projects and freelancing on [Github](https://github.com/RoboMWM)
     - [GriefPrevention](https://github.com/TechFortress/GriefPrevention) is one of the largest projects I maintain
@@ -11,9 +11,9 @@
 
 ## Contact
 
-- IRC/Chat: currently down
+- IRC: #robomwm @ irc.esper.net [Launch IRC webclient](https://r.robomwm.com/irc)
 - I read all direct messages from patrons on [Patreon](https://r.robomwm.com/patreon), which get emailed to me.
-- If you wish to use discord, there's a `#robomwm` channel in the [GriefPrevention Discord server](https://r.griefprevention.com/dumcord)
+- If you wish to use discord, ping me in the `#general` channel in the [GriefPrevention Discord server](https://r.griefprevention.com/dumcord)
 
 ## Notable Projects
 
