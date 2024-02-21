@@ -1,4 +1,23 @@
-location /.well-known/webfinger {
-  add_header Access-Control-Allow-Origin '*';
-  return 301 https://mastodon.robomwm.com$request_uri;
+{
+    "subject": "acct:RoboMWM@robomwm.com",
+    "aliases": [
+        "https://mastodon.robomwm.com/@RoboMWM",
+        "https://mastodon.robomwm.com/users/RoboMWM"
+    ],
+    "links": [
+        {
+            "rel": "http://webfinger.net/rel/profile-page",
+            "type": "text/html",
+            "href": "https://mastodon.robomwm.com/@RoboMWM"
+        },
+        {
+            "rel": "self",
+            "type": "application/activity+json",
+            "href": "https://mastodon.robomwm.com/users/RoboMWM"
+        },
+        {
+            "rel": "http://ostatus.org/schema/1.0/subscribe",
+            "template": "https://mastodon.robomwm.com/authorize_interaction?uri={uri}"
+        }
+    ]
 }
