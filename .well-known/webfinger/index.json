@@ -1,0 +1,4 @@
+location /.well-known/webfinger {
+  add_header Access-Control-Allow-Origin '*';
+  return 301 https://mastodon.robomwm.com$request_uri;
+}
