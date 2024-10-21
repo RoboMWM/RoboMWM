@@ -4,7 +4,11 @@
 
 Little did I know just how involved I'd have to be to get the data off of this burned CD.
 
-During the weekend I decided to organize the multitude of discs I had stored away. Upon flipping through one of the CD cases, I found a marked CD that supposedly contained a PowerPoint of a relative's birthday. I remember seeing this file before as a PowerPoint, as it had existed on the floppy disks I went through earlier (this becomes relevant later). Most of the disc looks like it's been burned though, so it couldn't possibly just be that 2MB PowerPoint I remember seeing earlier...
+During the weekend I decided to organize the multitude of discs I had stored away.
+
+Upon flipping through one of the CD cases, I found a marked CD that supposedly contained a PowerPoint of a relative's birthday. I remember seeing this file before as a PowerPoint, as it had existed on the floppy disks I went through earlier (this becomes relevant later).
+
+However, I see that the majority of this disc looks like it's been burned; there must be more than just a mere 2MB PowerPoint...
 
 ## 12pm
 
