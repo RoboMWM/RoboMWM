@@ -1,6 +1,6 @@
-# Rescuing a CD held hostage by Roxio DirectDisc
+# Rescuing a CD held hostage by Roxio DirectCD
 
-![Back of a DirectDisc-burned CD]()
+![Back of the rescued CD]()
 
 Little did I know just how involved I'd have to be to get the data off of this burned CD.
 
@@ -58,13 +58,13 @@ So I now know for sure I need to try an older version, and I'm likely not going 
 
 After changing the BIOS to use BIOS instead of UEFI, Windows XP eventually installs! Roxio Easy CD Creator installs as well! Let's pop in the disc and... there it is! The disc has a label, and there's the three files! I copy them out. I am thankful, and victorious, but exhausted.
 
-I see that the format is called "DirectDisc," now etched in my mind as a garbage properietary format that holds old, burned, data CDs hostage.
+I see that the format is called "DirectCD," now etched in my mind as a garbage properietary format that holds old, burned, data CDs hostage.
 
-![Screenshot of the DirectDisc eject dialog]()
+![Screenshot of the DirectCD eject dialog]()
 
-(Even after selecting that option, the disc was still not readable by any other machine - besides showing how much space left the disc has.)
+(Even after selecting that option, the disc was still not readable by any other machine - besides showing how much space left the disc has. I also poked around a bit and saw that it adds a "Make disk writeable" context menu option for all burned CDs - it can even kidnap already-burned discs to its DirectCD format!!)
 
-Since I had a setup capable of reading these "DirectDisc" burned discs, I decided to see if I potentially had any others like this sitting around. Unfortunately (or fortunately, for now), there were no others.
+Since I had a setup capable of reading these "DirectCD" burned discs, I decided to see if I potentially had any others like this sitting around. Unfortunately (or fortunately, for now), there were no others.
 
 After switching back to UEFI and making a Windows 8 setup USB, I successfully recovered the system back to Windows 8.1 with the system image.
 
