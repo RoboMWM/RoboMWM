@@ -1,10 +1,12 @@
 # Activating VoLTE for AT&T-branded Microsoft Lumia 950
 
-**TL;DR:** If you want to activate service for VoLTE calls (VoLTE is required on AT&T) on an AT&T-Branded Microsoft Lumia 950 on an AT&T MVNO, make sure the Mobile Network Code (MNC) of the sim card is 410. The MNC can be found near the beginning of the sim card ICCID; it will look like this: 8901**410**. My new provider provided this sim card to me when I asked for an AT&T sim after ordering.
+## Summary
+
+If you want to activate service for VoLTE calls (VoLTE is required on AT&T) on an AT&T-Branded Microsoft Lumia 950 on an AT&T MVNO, make sure the Mobile Network Code (MNC) of the sim card is 410. The MNC can be found near the beginning of the sim card ICCID; it will look like this: 8901**410**. My new provider provided this sim card to me when I asked for an AT&T sim after ordering.
 
 Also a mini rant on Red Pocket support. They used to be good, but I guess they cut down on support staff in recent years or haven't scaled to their user base.
 
----
+## Story
 
 I had been using my AT&T-branded Microsoft Lumia 950 for several years with Red Pocket GSMA (AT&T network). Other than support registering my IMEI to allow my phone to register with IMS services and allow for Voice over LTE (VoLTE) calling (which is now a requirement to make and receive calls on AT&T's network due to the 3G shutdown), I had no issues, until recently.
 

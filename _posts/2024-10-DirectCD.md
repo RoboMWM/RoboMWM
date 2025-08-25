@@ -1,5 +1,15 @@
 # Rescuing a CD held hostage by Roxio DirectCD
 
+## Summary
+
+A proprietary format called "DirectCD" appears to not be readable on modern machines, compared to other more common CD formats. Worse yet, if the disc has not been "finalized" to be readable on other machines, it cannot be read by a standard CD/DVD drive; you need a drive with a CD/DVD burner.
+
+While there are tools you can pay for, I managed to read the disc via installing Windows XP and Roxio Easy CD Creator onto my laptop which has an eSATA port for my eSATA DVD Burner.
+
+It appears this DirectCD format and its driver hooks deep into the DVD/CD burner; apparently there is a context menu option to "Make disk writeable," even if the disc is burned and/or finalized.
+
+## Story
+
 ![Back of the rescued CD]()
 
 Little did I know just how involved I'd have to be to get the data off of this burned CD.
@@ -10,7 +20,7 @@ Upon flipping through one of the CD cases, I found a marked CD that supposedly c
 
 However, I see that the majority of this disc looks like it's been burned; there must be more than just a mere 2MB PowerPoint...
 
-## 12pm
+### 12pm
 
 I decided to pop in the disc into my CD-ROM drive in my Windows XP machine. It spins up for a very short time and then promptly spins down. Windows Explorer says it can't read the disc. "Hmm, perhaps it's damaged or unfinalized" I think to myself. I immediately look online to see if there's a way to read unfinalized discs. I come across https://superuser.com/questions/148647/how-to-read-old-non-finalized-cds and try some of the software, most of which report that it does not see any disc in the drive. I even tried Roxio Easy CD Creator 5, since I also have a copy of that software in my collection of discs - but it too didn't see anything in the drive.
 
@@ -20,7 +30,7 @@ Nonetheless, the external eSATA drive for my Windows 8.1 machine is also a DVD+R
 
 And... all the other software effectively doesn't see the disc in the drive. I went as far as trying data recovery software that was proported to be extended to support CD drives, but alas it too "didn't see a disc" in the drive. I also attempted installing Roxio software, both the UDF Reader and Easy CD Creator, but these both failed. The former claimed to not find a UDFReader drive, and the latter failed to run its setup program, with Windows stating it's incompatible. (This, too, becomes relevant later... much later.)
 
-## 2pm
+### 2pm
 
 "Well, all I gotta do is find the floppy disk version of this PowerPoint file, try to extract it from its pkzip container, and see if it matches the size." Or so I thought.
 
@@ -38,13 +48,13 @@ First, I needed to install Windows 7 onto the PC. I know I have a Windows 7 disc
 
 "Well, I'll try Windows Vista I suppose." I hit the setup screen, it sees the partition I created for it, and... it can't install. The hard drive is GPT, and it requires MBR. I can't easily change the hard drive disk type to MBR without data loss. I didn't bother to look up if Windows 7 would work with GPT and just guessed that maybe it would. So I spend time looking for a Windows 7 disc.
 
-## 10pm
+### 10pm
 
 I find some burned copies of Windows 7 Beta and RC1. RC1 also refuses the same as Vista. "I guess GPT support started with Windows 8." So it was time for the first modification to the plan.
 
 I had an extra unused hard drive lying around, and a Seagate USB adapter I could borrow. "Perhaps I can install a Windows To Go version of Windows 7, and boot off of that?" The answer was yes. WinToUSB existed, and was able to make a Windows 7 To Go... but it would not do it with the Professional edition for free. I search a bit, and find that perhaps an older version would do it. Thanks to the Internet Archive's Wayback machine, I was able to grab an older version that permitted me to create a Windows 7 Professional To Go image onto my USB hard drive.
 
-## 11pm
+### 11pm
 
 The laptop successfully boots from it! While I wait for it to install drivers, I play a round of Wii Sports Resort Bowling (I wanted to see how much the gyroscope affects my usual Wii Sports Bowling throw.)
 
@@ -54,7 +64,7 @@ Windows 7 is running on the laptop, without me having to mess with the primary h
 
 So I now know for sure I need to try an older version, and I'm likely not going to be able to make a To Go install of Vista or XP. I wonder if Windows XP setup would be able to recognize the USB hard drive and install to it. Indeed it does! But... it still requires writing some data to the primary hard drive, which it can't because it's GPT. After briefly looking up ways to convert the hard drive to MBR without data loss, I end up just making another system image backup, this time using Windows, just to give it a try in case the RescueZilla backup doesn't work.
 
-## 1am
+### 1am
 
 After changing the BIOS to use BIOS instead of UEFI, Windows XP eventually installs! Roxio Easy CD Creator installs as well! Let's pop in the disc and... there it is! The disc has a label, and there's the three files! I copy them out. I am thankful, and victorious, but exhausted.
 

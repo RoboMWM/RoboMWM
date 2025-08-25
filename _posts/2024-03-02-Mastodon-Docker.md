@@ -1,4 +1,4 @@
-Seeing that there's a lot of notes for a lot of things I've done over the years, I've decided to formalize this knowledge, whether it be for future me or for future others.
+Seeing that there's a lot of notes for a lot of things I've done over the years, I've decided to formalize this knowledge, whether it be for future me or others.
 
 One of my latest adventures was hosting my own Mastodon instance. I initially tried following the install guide, but ran into various issues that assumed I had some prerequisites installed that weren't fully detailed in the guide. Things like yarn and such, which I later found out I had to do extra things after pasting in errors to Bing AI (which I guess I should now call "Copilot"). I continued to struggle with this for a few hours, until deciding to ditch it and have a go at trying to run it in docker with docker-compose. I figured it'd be a good way to get some docker/container experience outside of work.
 
