@@ -1,8 +1,6 @@
 # Archival ffmpeg commands
 
-Commands for archiving videos with no loss of quality.
-
-Commands for publishing/distributing videos (where file size matters more) are a continuous work in progress being published at TODO PUT REPO LINK HERE
+Commands for **archiving videos with no loss of quality.** (Or no perceptual loss of quality.) For publishing/distributing videos (where file size matters more) are published at https://github.com/RoboMWM/ffmpeg_drag-and-drop_batch_scripts
 
 ## Lossless
 
@@ -16,6 +14,9 @@ For re-encoding uncompressed or another lossless codec to FFV1 (e.g. captures of
 - `ffmpeg.exe -hide_banner -i .\sharpcam6-eh55-2001-01.avi -an -vcodec ffv1 -level 3 -coder 1 -context 1 -g 1 -slicecrc 1 -pass 1 -vf setfield=tff -f null NUL`
 - second pass to mkv:
 - `ffmpeg.exe -hide_banner -i .\sharpcam6-eh55-2001-01.avi -acodec copy -vcodec ffv1 -level 3 -coder 1 -context 1 -g 1 -slicecrc 1 -pass 2 -vf setfield=tff sharpcam6-eh55-2001-01.mkv`
+
+one liner:
+`D:\programs\ffmpeg\ffmpeg.exe -hide_banner -i D:\fultonsheenstopworld.avi -an -vcodec ffv1 -level 3 -coder 1 -context 1 -g 1 -slicecrc 1 -pass 1 -vf setfield=tff -f null NUL; if($?) {D:\programs\ffmpeg\ffmpeg.exe -hide_banner -i D:\fultonsheenstopworld.avi -acodec copy -vcodec ffv1 -level 3 -coder 1 -context 1 -g 1 -slicecrc 1 -pass 1 -vf setfield=tff fultonsheenstopworld.mkv}`
 
 Optional flags:
 - Add `-passlogfile K:\ffmpeg2pass` to change where the passlogfield is created
@@ -56,3 +57,8 @@ If the source doesn't include whether it's tff or bff interlacing, you can speci
 ## Notes
 
 Using 10-bit encoding of an 8-bit source can improve compression efficiency and thus reduce file size. I compressed a 1.29GB MPEG2 source to 466MB instead of 474MB. If you wish to try 10-bit encoding for 8-bit sources, add `-pix_fmt yuv420p10le`
+
+Sources:
+- https://www.dr-lex.be/info-stuff/videotips.html
+- https://yukisubs.wordpress.com/wp-content/uploads/2016/10/why_does_10bit_save_bandwidth_-_ateme.pdf
+- https://x266.nl/x264/10bit_03-422_10_bit_pristine_video_quality.pdf
