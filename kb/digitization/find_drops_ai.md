@@ -1,5 +1,9 @@
 This is the output of the couple of AI chat turns to generate a script that could identify skipped frames from one capture that were not missing in another.
 
+The frame is literally skipped, as in, not duplicated or 'detected as dropped,' but actually skipped with no way to tell other than comparing with another capture from another VCR that doesn't have skipped frames (i.e. the capture is slightly longer).
+
+It identifies the skipped frame with what appears to be 100% accuracy, especially in low motion scenes that I cannot detect with my human eyes.
+
 Because the script crops the outer edges, it appears to avoid any OSD overlays as a bonus.
 
 I installed python 3.12 with the standalone MSI installer in Sandboxie (with `MsiInstallerExemptions=y` in sandbox configuration and checking the box to install `py` as admin) and used `pip install opencv-python numpy tqdm` to install dependencies. I had to run the script with the `py` command instead of `python`.

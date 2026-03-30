@@ -107,13 +107,13 @@ $filter | Out-File -FilePath $FilterScript -Encoding ASCII -Force
 # ==========================================
 
 Write-Host "`nExecuting FFmpeg PASS 1 (Analyzing)..." -ForegroundColor Cyan
-$pass1Cmd = "ffmpeg -hide_banner -y -i `"$BrokenVideo`" -i `"$SecondVideo`" -i `"$GoodAudio`" -/filter_complex `"$FilterScript`" -map `"[vout]`" -c:v ffv1 -level 3 -coder 1 -context 1 -g 1 -slicecrc 1 -pass 1 -an -f null NUL"
+$pass1Cmd = "ffmpeg -hide_banner -y -i `"$BrokenVideo`" -i `"$SecondVideo`" -i `"$GoodAudio`" -/filter_complex `"$FilterScript`" -map `"[vout]`" -c:v ffv1 -level 3 -coder 1 -context 1 -g 1 -slicecrc 1 -pass 1 -aspect 4:3 -an -f null NUL"
 
 Write-Host $pass1Cmd -ForegroundColor DarkGray
 Invoke-Expression $pass1Cmd
 
 Write-Host "`nExecuting FFmpeg PASS 2 (Encoding)..." -ForegroundColor Cyan
-$pass2Cmd = "ffmpeg -hide_banner -y -i `"$BrokenVideo`" -i `"$SecondVideo`" -i `"$GoodAudio`" -/filter_complex `"$FilterScript`" -map `"[vout]`" -map 2:a -c:v ffv1 -level 3 -coder 1 -context 1 -g 1 -slicecrc 1 -pass 2 -c:a flac `"$OutputVideo`""
+$pass2Cmd = "ffmpeg -hide_banner -y -i `"$BrokenVideo`" -i `"$SecondVideo`" -i `"$GoodAudio`" -/filter_complex `"$FilterScript`" -map `"[vout]`" -map 2:a -c:v ffv1 -level 3 -coder 1 -context 1 -g 1 -slicecrc 1 -pass 2 -aspect 4:3 -c:a flac -compression_level 12 `"$OutputVideo`""
 
 Write-Host $pass2Cmd -ForegroundColor DarkGray
 Invoke-Expression $pass2Cmd
