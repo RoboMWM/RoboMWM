@@ -14,7 +14,7 @@ param (
     # Trimming parameters (Format: "HH:MM:SS.mmm" or seconds)
     [string]$TrimStart = "00:00:00.901",
     [string]$TrimEnd = "",
-    [string]$CutFromEnd = "00:00:53.653"     # Use this to chop time off the end (e.g., "53.653" or "00:00:53.653")
+    [string]$CutFromEnd = "00:00:53.394"     # Use this to chop time off the end (e.g., "53.653" or "00:00:53.653")
 )
 
 function Convert-ToSeconds {
