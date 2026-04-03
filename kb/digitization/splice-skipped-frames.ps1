@@ -9,7 +9,12 @@ param (
     [string]$FramesList2 = "frames2.txt",
     [string]$OutputVideo = "fixed_output.mkv",
     [string]$FilterScript = "filtergraph.txt",
-    [double]$Framerate = 0
+    [double]$Framerate = 0,
+
+    # Trimming parameters (Format: "HH:MM:SS.mmm" or seconds)
+    [string]$TrimStart = "00:00:00.901",
+    [string]$TrimEnd = "",
+    [string]$CutFromEnd = "00:00:53.653"     # Use this to chop time off the end (e.g., "53.653" or "00:00:53.653")
 )
 
 # Read the frames, ensure they are numbers, sort sequentially
@@ -103,17 +108,62 @@ $filter += "${concatStr}concat=n=${totalPieces}:v=1:a=0,setfield=tff,setpts=N/FR
 $filter | Out-File -FilePath $FilterScript -Encoding ASCII -Force
 
 # ==========================================
+# TRIMMING LOGIC
+# ==========================================
+$trimArgs = ""
+if (![string]::IsNullOrWhiteSpace($TrimStart)) {
+    $trimArgs += " -ss $TrimStart"
+}
+
+# Decide between an absolute End Time or a "Cut from End" math approach
+if (![string]::IsNullOrWhiteSpace($TrimEnd)) {
+    $trimArgs += " -to $TrimEnd"
+} elseif (![string]::IsNullOrWhiteSpace($CutFromEnd)) {
+    Write-Host "`nCalculating exact end time based on `$CutFromEnd..." -ForegroundColor Cyan
+
+    # Get total duration of the master audio file
+    $durStr = (ffprobe -v error -show_entries format=duration -of default=noprint_wrappers=1:nokey=1 $GoodAudio).Trim()
+
+    if (![string]::IsNullOrWhiteSpace($durStr)) {
+        $totalSeconds = [double]$durStr
+
+        # Parse the amount to cut
+        $cutSeconds = 0
+        if ($CutFromEnd -match ':') {
+            $cutSeconds = [TimeSpan]::Parse($CutFromEnd).TotalSeconds
+        } else {
+            $cutSeconds = [double]$CutFromEnd
+        }
+
+        # Calculate new target end time
+        $targetEndSeconds = $totalSeconds - $cutSeconds
+        if ($targetEndSeconds -lt 0) { $targetEndSeconds = 0 }
+
+        $targetEndTime = [TimeSpan]::FromSeconds($targetEndSeconds)
+        $calculatedTrimEnd = $targetEndTime.ToString("hh\:mm\:ss\.fff")
+
+        Write-Host "-> Total Duration: $([TimeSpan]::FromSeconds($totalSeconds).ToString("hh\:mm\:ss\.fff"))"
+        Write-Host "-> Cutting: $cutSeconds seconds"
+        Write-Host "-> Auto-generated TrimEnd: $calculatedTrimEnd" -ForegroundColor Yellow
+
+        $trimArgs += " -to $calculatedTrimEnd"
+    } else {
+        Write-Host "Warning: Could not extract duration from $GoodAudio. Skipping end trim." -ForegroundColor Red
+    }
+}
+
+# ==========================================
 # 2-PASS FFV1 ENCODING
 # ==========================================
 
 Write-Host "`nExecuting FFmpeg PASS 1 (Analyzing)..." -ForegroundColor Cyan
-$pass1Cmd = "ffmpeg -hide_banner -y -i `"$BrokenVideo`" -i `"$SecondVideo`" -i `"$GoodAudio`" -/filter_complex `"$FilterScript`" -map `"[vout]`" -c:v ffv1 -level 3 -coder 1 -context 1 -g 1 -slicecrc 1 -pass 1 -aspect 4:3 -an -f null NUL"
+$pass1Cmd = "ffmpeg -hide_banner -y -i `"$BrokenVideo`" -i `"$SecondVideo`" -i `"$GoodAudio`" -/filter_complex `"$FilterScript`" -map `"[vout]`" -c:v ffv1 -level 3 -coder 1 -context 1 -g 1 -slicecrc 1 -pass 1 -aspect 4:3 -an $trimArgs -f null NUL"
 
 Write-Host $pass1Cmd -ForegroundColor DarkGray
 Invoke-Expression $pass1Cmd
 
 Write-Host "`nExecuting FFmpeg PASS 2 (Encoding)..." -ForegroundColor Cyan
-$pass2Cmd = "ffmpeg -hide_banner -y -i `"$BrokenVideo`" -i `"$SecondVideo`" -i `"$GoodAudio`" -/filter_complex `"$FilterScript`" -map `"[vout]`" -map 2:a -c:v ffv1 -level 3 -coder 1 -context 1 -g 1 -slicecrc 1 -pass 2 -aspect 4:3 -c:a flac -compression_level 12 `"$OutputVideo`""
+$pass2Cmd = "ffmpeg -hide_banner -y -i `"$BrokenVideo`" -i `"$SecondVideo`" -i `"$GoodAudio`" -/filter_complex `"$FilterScript`" -map `"[vout]`" -map 2:a -c:v ffv1 -level 3 -coder 1 -context 1 -g 1 -slicecrc 1 -pass 2 -aspect 4:3 -c:a flac -compression_level 12 $trimArgs `"$OutputVideo`""
 
 Write-Host $pass2Cmd -ForegroundColor DarkGray
 Invoke-Expression $pass2Cmd
