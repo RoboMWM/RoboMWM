@@ -5,8 +5,8 @@
 param (
     [string]$BrokenVideo = "video_with_drops.avi",[string]$SecondVideo = "second_capture.avi",
     [string]$GoodAudio   = "complete_video.avi",
-    [string]$FramesList  = "frames.txt",
-    [string]$FramesList2 = "frames2.txt",
+    [string]$FramesList  = "",
+    [string]$FramesList2 = "",
     [string]$OutputVideo = "fixed_output.mkv",
     [string]$FilterScript = "filtergraph.txt",
     [double]$Framerate = 0,
@@ -16,6 +16,14 @@ param (
     [string]$TrimEnd = "",
     [string]$CutFromEnd = "00:00:53.394"     # Use this to chop time off the end (e.g., "53.653" or "00:00:53.653")
 )
+
+if (-not $FramesList) {
+    $FramesList = "$BrokenVideo-skipped_frames.txt"
+}
+
+if (-not $FramesList2) {
+    $FramesList2 = "$SecondVideo-skipped_frames.txt"
+}
 
 function Convert-ToSeconds {
     param ([string]$Value)
