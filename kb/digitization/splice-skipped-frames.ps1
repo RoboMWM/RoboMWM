@@ -1,13 +1,17 @@
 # Takes a "broken" video capture with 1 frame skips and splices them in from another capture that has different 1 frame skips.
-# Then muxes the audio with the audio from a third capture that does not have 1 frame skips.
+# Then muxes the audio with the HiFi audio from a third capture that does not have 1 frame skips.
+# Outputs a separate FLAC file of the linear audio track from another capture
 # Generated with AI after many turns of debugging, namely attempting to get the offset recalculated correctly after splicing in a frame.
 
 param (
-    [string]$BrokenVideo = "video_with_drops.avi",[string]$SecondVideo = "second_capture.avi",
+    [string]$BrokenVideo = "video_with_drops.avi",
+    [string]$SecondVideo = "second_capture.avi",
     [string]$GoodAudio   = "complete_video.avi",
+    [string]$LinearAudio = "linear_audio_capture.avi",
     [string]$FramesList  = "",
     [string]$FramesList2 = "",
     [string]$OutputVideo = "fixed_output.mkv",
+    [string]$OutputLinearAudio = "linear_export.flac",
     [string]$FilterScript = "filtergraph.txt",
     [double]$Framerate = 0,
 
@@ -209,21 +213,36 @@ if ($finalSplicePoints.Count -gt 0) {
 # ==========================================
 
 Write-Host "`nExecuting FFmpeg PASS 1 (Analyzing)..." -ForegroundColor Cyan
-$pass1Cmd = "ffmpeg -hide_banner -y -i `"$BrokenVideo`" -i `"$SecondVideo`" -i `"$GoodAudio`" -/filter_complex `"$FilterScript`" -map `"[vout]`" -c:v ffv1 -level 3 -coder 1 -context 1 -g 1 -slicecrc 1 -pass 1 -aspect 4:3 -an $trimArgs -f null NUL"
+$pass1Cmd = "ffmpeg -hide_banner -y -i `"$BrokenVideo`" -i `"$SecondVideo`" -i `"$GoodAudio`" -/filter_complex `"$FilterScript`" -map `"[vout]`" -c:v ffv1 -level 3 -coder 1 -context 1 -g 1 -slicecrc 1 -slices 4 -pass 1 -aspect 4:3 -an $trimArgs -f null NUL"
 
 Write-Host $pass1Cmd -ForegroundColor DarkGray
 Invoke-Expression $pass1Cmd
 
 Write-Host "`nExecuting FFmpeg PASS 2 (Encoding)..." -ForegroundColor Cyan
-$pass2Cmd = "ffmpeg -hide_banner -y -i `"$BrokenVideo`" -i `"$SecondVideo`" -i `"$GoodAudio`" -/filter_complex `"$FilterScript`" -map `"[vout]`" -map 2:a -c:v ffv1 -level 3 -coder 1 -context 1 -g 1 -slicecrc 1 -pass 2 -aspect 4:3 -c:a flac -compression_level 12 $trimArgs `"$OutputVideo`""
+$pass2Cmd = "ffmpeg -hide_banner -y -i `"$BrokenVideo`" -i `"$SecondVideo`" -i `"$GoodAudio`" -/filter_complex `"$FilterScript`" -map `"[vout]`" -map 2:a -c:v ffv1 -level 3 -coder 1 -context 1 -g 1 -slicecrc 1 -slices 4 -pass 2 -aspect 4:3 -c:a flac -compression_level 12 $trimArgs `"$OutputVideo`""
 
 Write-Host $pass2Cmd -ForegroundColor DarkGray
 Invoke-Expression $pass2Cmd
 
-# Check if FFmpeg succeeded
-if ($LASTEXITCODE -eq 0) {
-    Write-Host "`nDone! Successfully saved archival 2-pass FFV1/FLAC as $OutputVideo" -ForegroundColor Green
-    Write-Host "Final output contains $($finalSplicePoints.Count) spliced replacement frame(s) after trim." -ForegroundColor Cyan
+$ffmpegExitCode = $LASTEXITCODE
+
+# ==========================================
+# LINEAR AUDIO EXTRACTION
+# ==========================================
+if ($ffmpegExitCode -eq 0) {
+    Write-Host "`nExtracting Archival Linear Audio Track..." -ForegroundColor Cyan
+    # -vn ignores video, -map 0:a selects just the audio stream from $LinearAudio, and $trimArgs applies our global trim settings.
+    $linearCmd = "ffmpeg -hide_banner -y -i `"$LinearAudio`" -vn -map 0:a -c:a flac -compression_level 12 $trimArgs `"$OutputLinearAudio`""
+    Write-Host $linearCmd -ForegroundColor DarkGray
+    Invoke-Expression $linearCmd
+
+    if ($LASTEXITCODE -eq 0) {
+        Write-Host "`nDone! Successfully saved archival 2-pass FFV1/FLAC as $OutputVideo" -ForegroundColor Green
+        Write-Host "Successfully exported isolated linear audio to $OutputLinearAudio" -ForegroundColor Green
+        Write-Host "Final video output contains $($finalSplicePoints.Count) spliced replacement frame(s) after trim." -ForegroundColor Cyan
+    } else {
+        Write-Host "`nFFmpeg encountered an error while exporting the Linear Audio. Check the console output above." -ForegroundColor Red
+    }
 } else {
-    Write-Host "`nFFmpeg encountered an error during Pass 2. Check the console output above." -ForegroundColor Red
+    Write-Host "`nFFmpeg encountered an error during Pass 2. Video encoding failed. Skipping Linear Audio export." -ForegroundColor Red
 }

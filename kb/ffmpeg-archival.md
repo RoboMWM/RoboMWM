@@ -11,12 +11,12 @@ For re-encoding uncompressed or another lossless codec to FFV1 (e.g. captures of
 - first pass to null muxer
 - archival settings (error correction, compression, etc.)
 - set interlace flag top-field-first (ignore if not interlaced source)
-- `ffmpeg.exe -hide_banner -i .\sharpcam6-eh55-2001-01.avi -an -vcodec ffv1 -level 3 -coder 1 -context 1 -g 1 -slicecrc 1 -pass 1 -vf setfield=tff -f null NUL`
-- second pass to mkv:
-- `ffmpeg.exe -hide_banner -i .\sharpcam6-eh55-2001-01.avi -acodec copy -vcodec ffv1 -level 3 -coder 1 -context 1 -g 1 -slicecrc 1 -pass 2 -vf setfield=tff sharpcam6-eh55-2001-01.mkv`
+- Two pass to mkv
 
-one liner:
-`D:\programs\ffmpeg\ffmpeg.exe -hide_banner -i D:\fultonsheenstopworld.avi -an -vcodec ffv1 -level 3 -coder 1 -context 1 -g 1 -slicecrc 1 -pass 1 -vf setfield=tff -f null NUL; if($?) {D:\programs\ffmpeg\ffmpeg.exe -hide_banner -i D:\fultonsheenstopworld.avi -acodec copy -vcodec ffv1 -level 3 -coder 1 -context 1 -g 1 -slicecrc 1 -pass 1 -vf setfield=tff fultonsheenstopworld.mkv}`
+```powershell
+$in = "D:\fultonsheenstopworld.avi"
+ffmpeg -hide_banner -i $in -an -vcodec ffv1 -level 3 -coder 1 -context 1 -g 1 -slicecrc 1 -pass 1 -vf setfield=tff -slices 4 -f null NUL; if($?) {ffmpeg -hide_banner -i $in -acodec copy -vcodec ffv1 -level 3 -coder 1 -context 1 -g 1 -slicecrc 1 -slices 4 -pass 2 -vf setfield=tff -slices 4 "$([System.IO.Path]::GetFileNameWithoutExtension($in)).mkv"}
+```
 
 Optional flags:
 - Add `-passlogfile K:\ffmpeg2pass` to change where the passlogfield is created
