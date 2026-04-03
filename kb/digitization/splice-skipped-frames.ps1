@@ -17,6 +17,20 @@ param (
     [string]$CutFromEnd = "00:00:53.653"     # Use this to chop time off the end (e.g., "53.653" or "00:00:53.653")
 )
 
+function Convert-ToSeconds {
+    param ([string]$Value)
+
+    if ([string]::IsNullOrWhiteSpace($Value)) { return 0 }
+    if ($Value -match ':') { return [TimeSpan]::Parse($Value).TotalSeconds }
+    return [double]$Value
+}
+
+function Format-Timecode {
+    param ([double]$Seconds)
+
+    return ([TimeSpan]::FromSeconds([Math]::Max($Seconds, 0))).ToString("hh\:mm\:ss\.fff")
+}
+
 # Read the frames, ensure they are numbers, sort sequentially
 $drops1 = Get-Content $FramesList -ErrorAction SilentlyContinue | Where-Object { $_ -match '^\d+$' } | ForEach-Object { [int]$_ } | Sort-Object
 $drops2 = Get-Content $FramesList2 -ErrorAction SilentlyContinue | Where-Object { $_ -match '^\d+$' } | ForEach-Object { [int]$_ } | Sort-Object
@@ -47,6 +61,7 @@ $filter = ""
 $concatStr = ""
 $current_index1 = 0    # Tracks position STRICTLY in Video 1's timeline
 $current_broadcast = 0 # Tracks position in the ABSOLUTE final output timeline
+$splicePoints = @()
 $i = 0
 
 Write-Host "Generating FFmpeg filtergraph to splice $($drops1.Count) frames from $SecondVideo..."
@@ -87,9 +102,14 @@ foreach ($d in $drops1) {
     
     # 3. Timecode Calculation & Output
     $seconds = $target_broadcast_frame / $Framerate
-    $ts = [TimeSpan]::FromSeconds($seconds)
-    $timecode = $ts.ToString("hh\:mm\:ss\.fff")
+    $timecode = Format-Timecode $seconds
     Write-Host "-> Spliced V2 frame $index2 to fill absolute broadcast frame $target_broadcast_frame (Timecode: $timecode)" -ForegroundColor Yellow
+
+    $splicePoints += [pscustomobject]@{
+        SourceFrame = $index2
+        BroadcastFrame = $target_broadcast_frame
+        BroadcastTimecode = $timecode
+    }
     
     # 4. Advance our trackers
     $current_broadcast++  # We added 1 replacement frame to the absolute timeline
@@ -110,6 +130,8 @@ $filter | Out-File -FilePath $FilterScript -Encoding ASCII -Force
 # ==========================================
 # TRIMMING LOGIC
 # ==========================================
+$trimStartSeconds = Convert-ToSeconds $TrimStart
+$trimEndSeconds = $null
 $trimArgs = ""
 if (![string]::IsNullOrWhiteSpace($TrimStart)) {
     $trimArgs += " -ss $TrimStart"
@@ -117,6 +139,7 @@ if (![string]::IsNullOrWhiteSpace($TrimStart)) {
 
 # Decide between an absolute End Time or a "Cut from End" math approach
 if (![string]::IsNullOrWhiteSpace($TrimEnd)) {
+    $trimEndSeconds = Convert-ToSeconds $TrimEnd
     $trimArgs += " -to $TrimEnd"
 } elseif (![string]::IsNullOrWhiteSpace($CutFromEnd)) {
     Write-Host "`nCalculating exact end time based on `$CutFromEnd..." -ForegroundColor Cyan
@@ -128,21 +151,16 @@ if (![string]::IsNullOrWhiteSpace($TrimEnd)) {
         $totalSeconds = [double]$durStr
 
         # Parse the amount to cut
-        $cutSeconds = 0
-        if ($CutFromEnd -match ':') {
-            $cutSeconds = [TimeSpan]::Parse($CutFromEnd).TotalSeconds
-        } else {
-            $cutSeconds = [double]$CutFromEnd
-        }
+        $cutSeconds = Convert-ToSeconds $CutFromEnd
 
         # Calculate new target end time
         $targetEndSeconds = $totalSeconds - $cutSeconds
         if ($targetEndSeconds -lt 0) { $targetEndSeconds = 0 }
+        $trimEndSeconds = $targetEndSeconds
 
-        $targetEndTime = [TimeSpan]::FromSeconds($targetEndSeconds)
-        $calculatedTrimEnd = $targetEndTime.ToString("hh\:mm\:ss\.fff")
+        $calculatedTrimEnd = Format-Timecode $targetEndSeconds
 
-        Write-Host "-> Total Duration: $([TimeSpan]::FromSeconds($totalSeconds).ToString("hh\:mm\:ss\.fff"))"
+        Write-Host "-> Total Duration: $(Format-Timecode $totalSeconds)"
         Write-Host "-> Cutting: $cutSeconds seconds"
         Write-Host "-> Auto-generated TrimEnd: $calculatedTrimEnd" -ForegroundColor Yellow
 
@@ -150,6 +168,32 @@ if (![string]::IsNullOrWhiteSpace($TrimEnd)) {
     } else {
         Write-Host "Warning: Could not extract duration from $GoodAudio. Skipping end trim." -ForegroundColor Red
     }
+}
+
+$trimStartFrame = [int][Math]::Ceiling($trimStartSeconds * $Framerate)
+$trimEndFrameExclusive = if ($null -ne $trimEndSeconds) { [int][Math]::Ceiling($trimEndSeconds * $Framerate) } else { [int]::MaxValue }
+$finalSplicePoints = @(
+    foreach ($splice in $splicePoints) {
+        if ($splice.BroadcastFrame -ge $trimStartFrame -and $splice.BroadcastFrame -lt $trimEndFrameExclusive) {
+            $finalFrame = $splice.BroadcastFrame - $trimStartFrame
+            [pscustomobject]@{
+                FinalFrame = $finalFrame
+                FinalTimecode = Format-Timecode ($finalFrame / $Framerate)
+                SourceFrame = $splice.SourceFrame
+                BroadcastFrame = $splice.BroadcastFrame
+                BroadcastTimecode = $splice.BroadcastTimecode
+            }
+        }
+    }
+)
+
+Write-Host "`nSplice points visible in final output: $($finalSplicePoints.Count) of $($splicePoints.Count)" -ForegroundColor Cyan
+if ($finalSplicePoints.Count -gt 0) {
+    foreach ($splice in $finalSplicePoints) {
+        Write-Host "-> Final frame $($splice.FinalFrame) (Timecode: $($splice.FinalTimecode)) comes from V2 frame $($splice.SourceFrame); original splice was broadcast frame $($splice.BroadcastFrame) ($($splice.BroadcastTimecode))" -ForegroundColor Yellow
+    }
+} else {
+    Write-Host "-> No spliced frames remain after trim." -ForegroundColor DarkYellow
 }
 
 # ==========================================
@@ -171,6 +215,7 @@ Invoke-Expression $pass2Cmd
 # Check if FFmpeg succeeded
 if ($LASTEXITCODE -eq 0) {
     Write-Host "`nDone! Successfully saved archival 2-pass FFV1/FLAC as $OutputVideo" -ForegroundColor Green
+    Write-Host "Final output contains $($finalSplicePoints.Count) spliced replacement frame(s) after trim." -ForegroundColor Cyan
 } else {
     Write-Host "`nFFmpeg encountered an error during Pass 2. Check the console output above." -ForegroundColor Red
 }
