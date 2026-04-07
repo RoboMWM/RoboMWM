@@ -1,6 +1,8 @@
 # Takes a "broken" video capture with 1 frame skips and splices them in from another capture that has different 1 frame skips.
 # Then muxes the audio with the HiFi audio from a third capture that does not have 1 frame skips.
 # Outputs a separate FLAC file of the linear audio track from another capture
+# mpv video.mkv --audio-file=external_audio.flac --lavfi-complex='[aid1][aid2]amix[ao]'
+# You can adjust volumes: --lavfi-complex='[aid1]volume=0.5[vol1];[aid2]volume=1.5[vol2];[vol1][vol2]amix[ao]'
 # Generated with AI after many turns of debugging, namely attempting to get the offset recalculated correctly after splicing in a frame.
 
 param (
@@ -11,7 +13,7 @@ param (
     [string]$FramesList  = "",
     [string]$FramesList2 = "",
     [string]$OutputVideo = "fixed_output.mkv",
-    [string]$OutputLinearAudio = "linear_export.flac",
+    [string]$OutputLinearAudio = "",
     [string]$FilterScript = "filtergraph.txt",
     [double]$Framerate = 0,
 
@@ -27,6 +29,10 @@ if (-not $FramesList) {
 
 if (-not $FramesList2) {
     $FramesList2 = "$SecondVideo-skipped_frames.txt"
+}
+
+if (-not $OutputLinearAudio) {
+    $OutputLinearAudio = "$LinearAudio.flac"
 }
 
 function Convert-ToSeconds {
@@ -231,8 +237,33 @@ $ffmpegExitCode = $LASTEXITCODE
 # ==========================================
 if ($ffmpegExitCode -eq 0) {
     Write-Host "`nExtracting Archival Linear Audio Track..." -ForegroundColor Cyan
-    # -vn ignores video, -map 0:a selects just the audio stream from $LinearAudio, and $trimArgs applies our global trim settings.
-    $linearCmd = "ffmpeg -hide_banner -y -i `"$LinearAudio`" -vn -map 0:a -c:a flac -compression_level 12 $trimArgs `"$OutputLinearAudio`""
+
+    $linearTrimArgs += " -ss $TrimStart"
+    Write-Host "`nCalculating exact end time based on `$CutFromEnd..." -ForegroundColor Cyan
+
+    # Get total duration of the linear audio file
+    $durStr = (ffprobe -v error -show_entries format=duration -of default=noprint_wrappers=1:nokey=1 $LinearAudio).Trim()
+
+    $totalSeconds = [double]$durStr
+
+    # Parse the amount to cut
+    $cutSeconds = Convert-ToSeconds $CutFromEnd
+
+    # Calculate new target end time
+    $targetEndSeconds = $totalSeconds - $cutSeconds
+    if ($targetEndSeconds -lt 0) { $targetEndSeconds = 0 }
+    $trimEndSeconds = $targetEndSeconds
+
+    $calculatedTrimEnd = Format-Timecode $targetEndSeconds
+
+    Write-Host "-> Total Duration: $(Format-Timecode $totalSeconds)"
+    Write-Host "-> Cutting: $cutSeconds seconds"
+    Write-Host "-> Auto-generated TrimEnd: $calculatedTrimEnd" -ForegroundColor Yellow
+
+    $linearTrimArgs += " -to $calculatedTrimEnd"
+
+    # -vn ignores video, -map 0:a selects just the audio stream from $LinearAudio, and $linearTrimArgs applies our global trim settings.
+    $linearCmd = "ffmpeg -hide_banner -y -i `"$LinearAudio`" -vn -map 0:a -c:a flac -compression_level 12 $linearTrimArgs `"$OutputLinearAudio`""
     Write-Host $linearCmd -ForegroundColor DarkGray
     Invoke-Expression $linearCmd
 
