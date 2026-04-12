@@ -233,6 +233,28 @@ Invoke-Expression $pass2Cmd
 $ffmpegExitCode = $LASTEXITCODE
 
 # ==========================================
+# BROKEN VIDEO AUDIO EXTRACTION
+# ==========================================
+if ($ffmpegExitCode -eq 0) {
+    Write-Host "`nExtracting Audio from Broken Video Capture..." -ForegroundColor Cyan
+
+    # Generate an output filename based on the BrokenVideo input name
+    $OutputBrokenAudio = "$BrokenVideo-audio.flac"
+    
+    # -vn ignores video, -map 0:a selects just the audio stream, and we reuse the $trimArgs calculated for the main encode
+    $brokenAudioCmd = "ffmpeg -hide_banner -y -i `"$BrokenVideo`" -vn -map 0:a -c:a flac -compression_level 12 $trimArgs `"$OutputBrokenAudio`""
+    
+    Write-Host $brokenAudioCmd -ForegroundColor DarkGray
+    Invoke-Expression $brokenAudioCmd
+
+    if ($LASTEXITCODE -ne 0) {
+        Write-Host "`nWarning: FFmpeg encountered an error extracting audio from the Broken Video." -ForegroundColor Red
+    } else {
+        Write-Host "Successfully exported broken video audio to $OutputBrokenAudio" -ForegroundColor Green
+    }
+}
+
+# ==========================================
 # LINEAR AUDIO EXTRACTION
 # ==========================================
 if ($ffmpegExitCode -eq 0) {
