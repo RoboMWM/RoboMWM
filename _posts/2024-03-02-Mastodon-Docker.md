@@ -415,3 +415,162 @@ Do note that this would only be for a single-instance mastodon.
 As I continued troubleshooting with Lamp, he pointed out that I could create 301 redirects with Cloudflare's page rules for free.
 
 ![Cloudflare Page Rule](https://i.imgur.com/xOfxGtr.png)
+
+### Using behind Cloudflare Tunnel and plain HTTP
+
+If running behind a `cloudflared` tunnel and you target `http://localhost:80`, the port-80 `return 301 https://...` in the guide above breaks origin fetch: the tunnel gets a redirect instead of content. You could fix this via targeting HTTPS with `https://127.0.0.1:443` but as Lamp pointed out to me, this is redundant. "well encrypting to localhost is kind of a waste of time isn't it" Tunnel itself is already encrypted edge-to-origin.
+
+So instead, keep the tunnel on `http://localhost:80` and update the nginx proxy config to *serve content* on port 80 instead of redirecting. Replace the port-80 `location /` block in `nginx/conf.d/mastodon.conf` with proxied locations mirroring the 443 block. Keep the `/.well-known/acme-challenge` location untouched so certbot renewals keep working. The full port-80 block becomes:
+
+```nginx
+server {
+        listen 80;
+        listen   [::]:80;
+
+        root /lebase;
+        index index.html index.htm;
+
+        server_name mastodon.yourdomain.here;
+
+        location ~ /.well-known/acme-challenge {
+            try_files $uri $uri/ =404;
+        }
+
+        location / {
+            proxy_set_header Host $http_host;
+            proxy_set_header X-Forwarded-Proto https;
+            proxy_set_header X-Real-IP $remote_addr;
+            proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+
+            proxy_pass http://web:3000;
+        }
+
+        location ^~ /api/v1/streaming {
+            proxy_set_header Host $http_host;
+            proxy_set_header X-Forwarded-Proto https;
+            proxy_set_header X-Real-IP $remote_addr;
+            proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+
+            proxy_pass http://streaming:4000;
+
+            proxy_buffering off;
+            proxy_redirect off;
+            proxy_http_version 1.1;
+            tcp_nodelay on;
+        }
+}
+```
+
+e.g. full file would look like:
+
+```
+server {
+        listen 80;
+        listen   [::]:80;
+
+        root /lebase;
+        index index.html index.htm;
+
+        server_name mastodon.yourdomain.here;
+
+        location ~ /.well-known/acme-challenge {
+            try_files $uri $uri/ =404;
+        }
+
+        location / {
+            proxy_set_header Host $http_host;
+            proxy_set_header X-Forwarded-Proto https;
+            proxy_set_header X-Real-IP $remote_addr;
+            proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+
+            proxy_pass http://web:3000;
+        }
+
+        location ^~ /api/v1/streaming {
+            proxy_set_header Host $http_host;
+            proxy_set_header X-Forwarded-Proto https;
+            proxy_set_header X-Real-IP $remote_addr;
+            proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+
+            proxy_pass http://streaming:4000;
+
+            proxy_buffering off;
+            proxy_redirect off;
+            proxy_http_version 1.1;
+            tcp_nodelay on;
+        }
+}
+server {
+        listen 443 ssl http2;
+        listen [::]:443 ssl http2;
+
+	# https://community.opalstack.com/d/1078-media-upload-errors-with-mastodon-instance/8
+	keepalive_timeout 70;
+	sendfile on;
+	client_max_body_size 80m;
+
+        root /mnt/none;
+        index index.html index.htm;
+
+        server_name mastodon.yourdomain.here; # Replace with your domain name
+
+
+        #ssl on;
+
+        # Replace your domain in these paths
+        ssl_certificate      /etc/letsencrypt/live/mastodon.yourdomain.here/fullchain.pem;
+        ssl_certificate_key  /etc/letsencrypt/live/mastodon.yourdomain.here/privkey.pem;
+
+        ssl_session_timeout  5m;
+        ssl_prefer_server_ciphers On;
+        ssl_protocols TLSv1 TLSv1.1 TLSv1.2;
+
+
+        absolute_redirect off;
+        server_name_in_redirect off;
+
+        error_page 404 /404.html;
+        error_page 410 /410.html;
+
+
+        location / {
+            proxy_set_header Host $http_host;
+            proxy_set_header X-Forwarded-Proto https;
+            proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+
+            proxy_pass http://web:3000;
+        }
+
+        location ^~ /api/v1/streaming {
+            proxy_set_header Host $http_host;
+            proxy_set_header X-Forwarded-Proto https;
+            proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+
+            proxy_pass http://streaming:4000;
+
+            proxy_buffering off;
+            proxy_redirect off;
+            proxy_http_version 1.1;
+            tcp_nodelay on;
+        }
+}
+```
+
+Notes:
+
+- `X-Forwarded-Proto https` is hardcoded on purpose. The origin only ever sees plain HTTP from the tunnel, but clients use HTTPS at the Cloudflare edge — without this header Mastodon builds `http://` URLs and can redirect-loop.
+- The 443 block stays exactly as-is.
+
+Reload and verify (run from the directory holding `docker-compose.yml`):
+
+```bash
+docker compose exec http nginx -t
+docker compose restart http
+curl -H 'Host: mastodon.yourdomain.here' -o /dev/null -w '%{http_code}\n' http://127.0.0.1/
+```
+
+Expect `200` (previously `301`). Public checks: `https://mastodon.yourdomain.here/` and `/api/v1/instance` should return `200` through the tunnel.
+
+Tradeoff: port 80 now serves content in cleartext to anyone hitting the server IP directly, not just the tunnel. For a single-user instance behind Cloudflare this is acceptable (browsers that visited the HTTPS site still upgrade via HSTS).
