@@ -24,3 +24,11 @@ That's when I discovered that Pi-hole is intended to be run on its own machine, 
 
 ### Adguard
 
+AI suggested this as an alternative. Appears to be designed to run in openwrt with its own openwrt package: Perfect! It did require a bit of initial setup though. After installing, I visit its setup page on port 3000 and configure how I want the DNS server to run. Then I configure a new management port and which interfaces to listen to. Since I wanted my existing DNS to propagate from the upstream router, I ran its server on port 5353 instead of default 53, and would need to configure the new interface to use that as the DNS server instead of the upstream router.
+
+### DNS Whitelist
+
+Since I wanted monitoring, interestingly AI suggested having adguard setup for two purposes - a DNS server for the isolated interface to talk to without having to forward it out to the upstream router, and for monitoring. It did not plan to do any filtering on Adguard itself, and that may be due to my goal of wanting to monitor what the projector attempts to reach out to. So, instead, it would use a domain whitelist, and allow traffic to IP addresses that Adguard resolved for only those whitelisted domains. All other traffic from the isolated interface would be blocked, and later on I'd tweak the iptable rules to log these denials.
+
+When the projector requests a whitelisted domain, dnsmasq performs a query to resolve its IPs. Traffic to these IPs are then whitelisted in nftables.
+
