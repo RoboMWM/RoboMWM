@@ -1,4 +1,4 @@
-I got myself a dirt-cheap LED projector to use as a situational secondary screen. The projector ran Android 13 and had wifi; I wasn't initially planning on having wireless capbailities, but the availability immediately made me want to attempt to use the projector wirelessly.
+I got myself a dirt-cheap LED projector to use as a situational secondary screen. The projector ran Android 13 and had wifi; I wasn't initially planning on having wireless capabilities, but the availability immediately made me want to attempt to use the projector wirelessly.
 
 Upon turning on the projector, I was very much surprised to see an interface that was very very much inspired by Windows 8. I've never seen anything attempt to emulate the Windows 8 interface besides some Windows Phone launcher apps. This one not only had a "tile-like" interface but also used the side flyouts, dialogs, and fonts that were very much metro-inspired. I immediately wanted to get into developer mode and record its screen to show off its interface.
 
@@ -48,7 +48,7 @@ AdGuard setup was the only thing that could not be automated from the OpenWRT te
 
 After getting the infrastructure setup, it was time to test whether the network was truly isolated... with another device (a spare android phone).
 
-## Testing the setup
+## Testing and understanding the setup
 
 My phone was able to acquire an IP address and had no internet access at all, exactly as I expected. So I asked how I can add approved domains to the whitelist, and added some sites like google.com. Hmm...  I can't access them. AI is claiming what I see in AdGuard is correct and gives me some commands to verify if things are working. The command returned an empty set of approved IPs, so something was wrong.
 
@@ -56,9 +56,13 @@ My phone was able to acquire an IP address and had no internet access at all, ex
 
 Openwrt comes with `dnsmasq` by default which is a lightweight version that does not include nftset, which would include the allowed IPs. To fix, I had to install `dnsmasq-full`. After performing this, I had to specify an explicit table identifier for the set... or so the AI thought, as it found out that this was already automatically done and now proposed deleting the entire set and recreating it. At least that's good for idempotency. After a few more turns, finally IP addresses were showing up in the approved domains table in `nft list`
 
+### Understanding how it allows connections
+
+During the troubleshooting, I understood how the isolation worked. The client inside the projector interface makes a DNS query for a domain. This request gets logged by AdGuard and forwarded to dnsmasq. If the domain is on the whitelist, dnsmasq adds the IP addresses it resolves to the nftables set. The client always gets the resolved IP addresses.
+
 ### Guiding the troubleshooting
 
-You still very much need to have at least some idea of what's wrong to help steer AI in the right direction. I _still_ was unable to access some whitelisted sites like youtube.com. After it suggested a range of fixes that did not work, I explicitly asked how I would see the logs of this traffic being blocked. After being given logs, it proposed other fixes which also did not work - I had to explicitly point out that these requests should be showing up here if they are indeed being rejected. 5 turns later of it correcting for Openwrt 25.x syntax, I was suddenly getting the opposite issue - everything was being allowed through! This took around 8 turns of debugging to properly configure the firwall to reject everything that isn't in the approved domains list.
+You still very much need to have at least some idea of what's wrong to help steer AI in the right direction. I _still_ was unable to access some whitelisted sites like youtube.com. After it suggested a range of fixes that did not work, I explicitly asked how I would see the logs of this traffic being blocked. After being given logs, it proposed other fixes which also did not work - I had to explicitly point out that these requests should be showing up here if they are indeed being rejected. 5 turns later of it correcting for Openwrt 25.x syntax, I was suddenly getting the opposite issue - everything was being allowed through! This took around 8 turns of debugging to properly configure the firewall to reject everything that isn't in the approved domains list.
 
 ## Lessons learned
 
